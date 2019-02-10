@@ -256,9 +256,9 @@ node . api PocketSmith fetchAccounts 12345
 
 ## Configuring Multiple Users for a Single Provider
 
-If you own multiple provider login accounts and wish to use them you can create a separate user for each, within PocketSync.
-
 Note: The default user is `pocketsync` which will be used if the `-u` flag is omitted from commands.
+
+If you own multiple provider login accounts and wish to use them you can create a separate user for each, within PocketSync.
 
 Create a new user:
 
