@@ -225,6 +225,18 @@ If you're happy with the dry-run then you can proceed with a live sync.
 node . sync
 ```
 
+You can run sync profiles unattended by passing the `--unattended` flag like so:
+
+```
+node . sync --unattended [sync profile name]
+```
+
+It's also possible to run all your sync profiles at once by executing the following:
+
+```bash
+node . sync --run-all
+```
+
 <a name="execute-api-commands"></a>
 
 ## Execute API commands
