@@ -1,0 +1,55 @@
+{
+  "type": "object",
+  "properties": {
+    "amount": { "type": "number" },
+    "bank_account": { "format": "uri" },
+    "bank_transaction_explanations": {
+      "type": "array",
+      "properties": {
+        "attachment": {
+          "type": "object",
+          "properties": {
+            "content_src": { "format": "uri" },
+            "content_src_medium": { "format": "uri" },
+            "content_src_small": { "format": "uri" },
+            "content_type": { "type": "string" },
+            "expires_at": { "format": "date-time" },
+            "file_name": { "type": "string" },
+            "file_size": { "type": "number" },
+            "url": { "format": "uri" }
+          }
+        },
+        "bank_account": { "format": "uri" },
+        "bank_transaction": { "format": "uri" },
+        "category": { "format": "uri" },
+        "dated_on": { "format": "date" },
+        "description": { "type": "string" },
+        "detail": { "type": "string" },
+        "ec_status": { "type": "string" },
+        "foreign_currency_value": { "type": "number" },
+        "gross_value": { "type": "number" },
+        "has_pending_operation": { "type": "string" },
+        "is_locked": { "type": "boolean" },
+        "is_money_in": { "type": "boolean" },
+        "is_money_out": { "type": "boolean" },
+        "is_money_paid_to_user": { "type": "boolean" },
+        "marked_for_review": { "type": "boolean" },
+        "sales_tax_rate": { "type": "number" },
+        "sales_tax_value": { "type": "number" },
+        "transaction_description": { "type": "string" },
+        "transfer_value": { "type": "number" },
+        "type": { "type": "string" },
+        "url": { "format": "uri" }
+      }
+    },
+    "created_at": { "format": "date-time" },
+    "dated_on": { "format": "date" },
+    "description": { "type": "string" },
+    "full_description": { "type": "string" },
+    "is_manual": { "type": "boolean" },
+    "matching_transactions_count": { "type": "number" },
+    "unexplained_amount": { "type": "number" },
+    "updated_at": { "format": "date-time" },
+    "url": { "format": "uri" }
+  }
+}

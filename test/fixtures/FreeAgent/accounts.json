@@ -1,0 +1,40 @@
+{
+  "bank_accounts": [
+    {
+      "url": "https://api.freeagent.com/v2/bank_accounts/123",
+      "opening_balance": "10700.44",
+      "bank_name": "HSBC",
+      "type": "StandardBankAccount",
+      "name": "Checking",
+      "is_personal": false,
+      "is_primary": true,
+      "status": "active",
+      "currency": "GBP",
+      "current_balance": "1232.08",
+      "account_number": "123123",
+      "sort_code": "11-11-11",
+      "bank_code": "hsbc",
+      "latest_activity_date": "2015-02-04",
+      "updated_at": "2015-02-06T22:01:09.000Z",
+      "created_at": "2015-10-05T13:04:43.000Z"
+    },
+    {
+      "url": "https://api.freeagent.com/v2/bank_accounts/456",
+      "opening_balance": "27.99",
+      "bank_name": "HSBC",
+      "type": "StandardBankAccount",
+      "name": "Saving",
+      "is_personal": false,
+      "is_primary": false,
+      "status": "active",
+      "currency": "GBP",
+      "current_balance": "0.96",
+      "account_number": "321321",
+      "sort_code": "10-07-10",
+      "bank_code": "hsbc",
+      "latest_activity_date": "2013-01-23",
+      "updated_at": "2015-01-24T08:43:24.000Z",
+      "created_at": "2017-10-05T15:06:45.000Z"
+    }
+  ]
+}

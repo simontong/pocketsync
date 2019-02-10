@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "properties": {
+    "account_number": { "type": "number" },
+    "bank_code": { "type": "string" },
+    "bank_name": { "type": "string" },
+    "created_at": { "format": "date-time" },
+    "currency": { "type": "string" },
+    "current_balance": { "type": "number" },
+    "is_personal": { "type": "boolean" },
+    "is_primary": { "type": "boolean" },
+    "latest_activity_date": { "format": "date" },
+    "name": { "type": "string" },
+    "opening_balance": { "type": "number" },
+    "sort_code": { "type": "string" },
+    "status": { "type": "string" },
+    "type": { "type": "string" },
+    "updated_at": { "format": "date-time" },
+    "url": { "format": "uri" }
+  }
+}

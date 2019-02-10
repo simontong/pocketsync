@@ -1,0 +1,65 @@
+[
+  {
+    "id": 12323,
+    "name": "Main Account",
+    "number": null,
+    "type": "bank",
+    "currency_code": "gbp",
+    "current_balance": 0,
+    "current_balance_in_base_currency": 0,
+    "current_balance_date": "2019-02-08",
+    "starting_balance": 0,
+    "starting_balance_date": "2019-02-07",
+    "institution": {
+      "id": 204353,
+      "title": "HSBC Business",
+      "currency_code": "gbp",
+      "created_at": "2017-09-28T04:45:08Z",
+      "updated_at": "2018-02-09T23:42:07Z"
+    },
+    "created_at": "2019-02-07T12:10:57Z",
+    "updated_at": "2019-02-08T03:00:24Z"
+  },
+  {
+    "id": 33334,
+    "name": "BUSINESS ACCOUNT",
+    "number": "30929460",
+    "type": "bank",
+    "currency_code": "gbp",
+    "current_balance": 23343.24,
+    "current_balance_in_base_currency": 22222.24,
+    "current_balance_date": "2019-02-07",
+    "starting_balance": 0,
+    "starting_balance_date": "2017-01-01",
+    "institution": {
+      "id": 34343,
+      "title": "Lloyds Business Banking",
+      "currency_code": "gbp",
+      "created_at": "2017-07-15T09:57:00Z",
+      "updated_at": "2017-07-15T09:57:00Z"
+    },
+    "created_at": "2017-07-15T09:59:08Z",
+    "updated_at": "2019-02-08T09:35:33Z"
+  },
+  {
+    "id": 233232,
+    "name": "Revolut GBP",
+    "number": null,
+    "type": "bank",
+    "currency_code": "gbp",
+    "current_balance": 333.31,
+    "current_balance_in_base_currency": 4444.31,
+    "current_balance_date": "2019-02-08",
+    "starting_balance": 0,
+    "starting_balance_date": "2017-08-01",
+    "institution": {
+      "id": 343434,
+      "title": "Revolut Business",
+      "currency_code": "gbp",
+      "created_at": "2017-09-28T04:45:08Z",
+      "updated_at": "2018-02-09T23:42:07Z"
+    },
+    "created_at": "2017-12-27T09:54:57Z",
+    "updated_at": "2019-02-08T03:00:24Z"
+  }
+]

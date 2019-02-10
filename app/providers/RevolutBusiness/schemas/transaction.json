@@ -1,0 +1,45 @@
+{
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "type": { "type": "string" },
+    "state": { "type": "string" },
+    "created_at": { "format": "date-time" },
+    "updated_at": { "format": "date-time" },
+    "completed_at": { "format": "date-time" },
+    "legs": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "leg_id": { "type": "string" },
+            "account_id": { "type": "string" },
+            "amount": { "type": "number" },
+            "currency": { "type": "string" },
+            "bill_amount": { "type": "number" },
+            "bill_currency": { "type": "string" },
+            "description": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "leg_id": { "type": "string" },
+            "account_id": { "type": "string" },
+            "amount": { "type": "number" },
+            "currency": { "type": "string" },
+            "description": { "type": "string" }
+          }
+        }
+      ]
+    },
+    "merchant": {
+      "name": { "type": "string" },
+      "city": { "type": "string" },
+      "category_code": { "type": "string" },
+      "country": { "type": "string" }
+    },
+    "reference": { "type": "string" }
+  }
+}

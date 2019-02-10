@@ -1,0 +1,49 @@
+{
+  "bank_transactions": [
+    {
+      "url": "https://api.freeagent.com/v2/bank_transactions/123",
+      "amount": "-9.95",
+      "bank_account": "https://api.freeagent.com/v2/bank_accounts/3434",
+      "dated_on": "2019-02-07",
+      "description": "Jane Doe Shop//OTHER/",
+      "full_description": "Jane Doe Shop//OTHER/$9.95",
+      "uploaded_at": "2019-02-08T04:01:16.000Z",
+      "unexplained_amount": "-9.95",
+      "is_manual": false,
+      "created_at": "2019-02-08T04:01:16.000Z",
+      "updated_at": "2019-02-08T04:01:16.000Z",
+      "matching_transactions_count": 0,
+      "bank_transaction_explanations": []
+    },
+    {
+      "url": "https://api.freeagent.com/v2/bank_transactions/4343",
+      "amount": "-10.0",
+      "bank_account": "https://api.freeagent.com/v2/bank_accounts/333",
+      "dated_on": "2019-02-01",
+      "description": "Google Play//OTHER/",
+      "full_description": "Google Play//OTHER/$10.00",
+      "uploaded_at": "2019-02-04T13:01:12.000Z",
+      "unexplained_amount": "-10.0",
+      "is_manual": false,
+      "created_at": "2019-02-04T13:01:12.000Z",
+      "updated_at": "2019-02-04T13:01:12.000Z",
+      "matching_transactions_count": 0,
+      "bank_transaction_explanations": []
+    },
+    {
+      "url": "https://api.freeagent.com/v2/bank_transactions/767676",
+      "amount": "-10000.0",
+      "bank_account": "https://api.freeagent.com/v2/bank_accounts/454545",
+      "dated_on": "2019-02-01",
+      "description": "Software Shop/Some notes/OTHER/",
+      "full_description": "Software Shop/Some notes/OTHER/$10,000.00",
+      "uploaded_at": "2019-02-01T13:01:15.000Z",
+      "unexplained_amount": "-10000.0",
+      "is_manual": false,
+      "created_at": "2019-02-01T13:01:15.000Z",
+      "updated_at": "2019-02-01T13:01:15.000Z",
+      "matching_transactions_count": 0,
+      "bank_transaction_explanations": []
+    }
+  ]
+}

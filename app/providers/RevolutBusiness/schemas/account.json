@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "balance": { "type": "number" },
+    "currency": { "type": "string" },
+    "state": { "type": "string" },
+    "public": { "type": "boolean" },
+    "created_at": { "format": "date-time" },
+    "updated_at": { "format": "date-time" }
+  }
+}

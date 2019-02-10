@@ -1,0 +1,20 @@
+{
+  "id": 123456,
+  "login": "john@smith.com",
+  "name": "John Smith",
+  "email": "john@smith.com",
+  "avatar_url": "https://secure.gravatar.com/avatar/123456789?d=404",
+  "beta_user": true,
+  "time_zone": "London",
+  "week_start_day": 1,
+  "is_reviewing_transactions": true,
+  "base_currency_code": "gbp",
+  "always_show_base_currency": false,
+  "using_multiple_currencies": true,
+  "available_accounts": 1234,
+  "available_budgets": 5678,
+  "last_logged_in_at": "2019-02-08T03:08:00Z",
+  "last_activity_at": "2019-02-08T13:59:34Z",
+  "created_at": "2017-01-16T17:29:19Z",
+  "updated_at": "2019-02-08T13:59:34Z"
+}

@@ -1,0 +1,10 @@
+.idea/
+.nyc_output/
+.vscode/
+node_modules/
+v8-profile/
+.fuse_hidden*
+.env
+.env.*
+!.env.example
+yarn-error.log

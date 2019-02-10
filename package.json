@@ -1,0 +1,45 @@
+{
+  "name": "pocketsync",
+  "version": "1.0.0",
+  "description": "Sync bank transactions between providers",
+  "main": "index.js",
+  "repository": "https://github.com/simontong/pocketsync",
+  "author": "Simon Tong",
+  "license": "MIT",
+  "scripts": {
+    "km": "knex-migrate --knexfile config/database.js"
+  },
+  "devDependencies": {
+    "@types/bunyan": "^1.8.5",
+    "@types/chai": "^4.1.7",
+    "@types/chalk": "^2.2.0",
+    "@types/lodash": "^4.14.120",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^10.12.24",
+    "chai": "^4.2.0",
+    "knex-migrate": "^1.7.0",
+    "mocha": "^5.2.0",
+    "nyc": "^13.2.0",
+    "prettier": "^1.16.4"
+  },
+  "dependencies": {
+    "ajv": "^6.9.1",
+    "bunyan": "^1.8.12",
+    "bunyan-prettystream": "^0.1.3",
+    "chalk": "^2.4.2",
+    "commander": "^2.19.0",
+    "dirty-json": "^0.7.0",
+    "dotenv": "^6.2.0",
+    "inquirer": "^6.2.2",
+    "knex": "^0.16.3",
+    "lodash": "^4.17.11",
+    "moment": "^2.24.0",
+    "mysql2": "^1.6.5",
+    "qs": "^6.6.0",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.5",
+    "table": "^5.2.2",
+    "verror": "^1.10.0",
+    "xml-js": "^1.6.9"
+  }
+}

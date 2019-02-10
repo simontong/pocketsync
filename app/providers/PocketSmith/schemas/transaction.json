@@ -1,0 +1,64 @@
+{
+  "type": "object",
+  "properties": {
+    "id": { "type": "number" },
+    "amount": { "type": "number" },
+    "amount_in_base_currency": { "type": "number" },
+    "category": {
+      "type": ["object", "null"],
+      "properties": {
+        "children": { "type": "array" },
+        "colour": { "type": "string" },
+        "created_at": { "format": "date-time" },
+        "id": { "type": "number" },
+        "is_bill": { "type": "boolean" },
+        "is_transfer": { "type": "boolean" },
+        "parent_id": { "type": "number" },
+        "refund_behaviour": { "type": "string" },
+        "title": { "type": "string" },
+        "updated_at": { "format": "date-time" }
+      }
+    },
+    "cheque_number": { "type": "number" },
+    "closing_balance": { "type": "number" },
+    "created_at": { "format": "date-time" },
+    "date": { "format": "date" },
+    "is_transfer": { "type": "boolean" },
+    "labels": { "type": "array" },
+    "memo": { "type": "string" },
+    "needs_review": { "type": "boolean" },
+    "note": { "type": "string" },
+    "original_payee": { "type": "string" },
+    "payee": { "type": "string" },
+    "status": { "type": "string" },
+    "transaction_account": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "number" },
+        "created_at": { "format": "date-time" },
+        "currency_code": { "type": "string" },
+        "current_balance": { "type": "number" },
+        "current_balance_date": { "format": "date" },
+        "current_balance_in_base_currency": { "type": "number" },
+        "institution": {
+          "type": "object",
+          "properties": {
+            "created_at": { "format": "date-time" },
+            "currency_code": { "type": "string" },
+            "id": { "type": "number" },
+            "title": { "type": "string" },
+            "updated_at": { "format": "date-time" }
+          }
+        },
+        "name": { "type": "string" },
+        "number": { "type": "string" },
+        "starting_balance": { "type": "number" },
+        "starting_balance_date": { "format": "date" },
+        "type": { "type": "string" },
+        "updated_at": { "format": "date-time" }
+      },
+      "updated_at": { "format": "date-time" },
+      "upload_source": "file"
+    }
+  }
+}
