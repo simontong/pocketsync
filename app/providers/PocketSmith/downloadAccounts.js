@@ -1,7 +1,7 @@
 'use strict';
 
 const api = require('./api');
-const { storeFetched, storeNormalized } = require('../../core/helpers');
+const { processAccounts } = require('../../core/helpers');
 const schema = require('./schemas/account');
 
 /**
@@ -10,72 +10,52 @@ const schema = require('./schemas/account');
  * @return {function(): Promise<*|Knex.QueryBuilder>}
  */
 const downloadAccounts = (ctx) => async () => {
-  // fetch data from API
-  const rows = await fetchAccounts(ctx);
-
-  // no data? bail
-  if (!rows.length) {
-    return [];
-  }
-
-  // normalize fetched data
-  return storeNormalizedAccounts(ctx, rows);
+  return processAccounts(ctx, schema, fetchAccounts, getAccountProviderRef, normalizeAccount);
 };
 
 /**
  * Fetch accounts from API and store in `apis` table
  * @param ctx
- * @return {Promise<*>}
+ * @return {Promise<*|Knex.QueryBuilder>}
  */
 const fetchAccounts = async (ctx) => {
-  const { log } = ctx;
   const req = api(ctx);
 
   // fetch accounts
   const me = await req.fetchMe();
-  const data = await req.fetchTransactionAccounts(me.id);
-
-  // log fetched
-  log.trace('%d accounts fetched', data.length);
-
-  // store fetched data in db
-  return storeFetchedAccounts(ctx, data);
+  return req.fetchTransactionAccounts(me.id);
 };
 
 /**
- * Store fetched accounts in db
- * @param ctx
- * @param data
- * @return {Promise<*|Knex.QueryBuilder>}
+ * account provider ref getter
+ * @param transaction
+ * @return {*}
  */
-const storeFetchedAccounts = (ctx, data) => {
-  return storeFetched(ctx, data, 'account', 'id');
+const getAccountProviderRef = (transaction) => {
+  return transaction.id;
 };
 
 /**
- * Normalize accounts from `apis` table
- * @param ctx
- * @param rows
- * @return {Promise<*|Knex.QueryBuilder>}
+ * Normalize API data from account fetch
+ * @param row
+ * @return {*}
  */
-const storeNormalizedAccounts = async (ctx, rows) => {
-  return storeNormalized(ctx, rows, 'account', schema, (row) => {
-    const data = row.data;
+const normalizeAccount = (row) => {
+  const data = row.data;
 
-    // normalize
-    return {
-      user_id: row.user_id,
-      provider_id: row.provider_id,
-      provider_ref: row.provider_ref,
-      name: data.name,
-      currency: data.currency_code.toUpperCase(),
-      // starting_balance: toLowestCommonUnit(data.starting_balance),
-    };
-  });
+  // normalize
+  return {
+    user_id: row.user_id,
+    provider_id: row.provider_id,
+    provider_ref: row.provider_ref,
+    name: data.name,
+    currency: data.currency_code.toUpperCase(),
+    // starting_balance: toLowestCommonUnit(data.starting_balance),
+  };
 };
 
 module.exports = {
   downloadAccounts,
-  storeFetchedAccounts,
-  storeNormalizedAccounts,
+  getAccountProviderRef,
+  normalizeAccount,
 };

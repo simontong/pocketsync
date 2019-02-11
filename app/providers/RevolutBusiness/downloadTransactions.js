@@ -3,7 +3,7 @@
 const _ = require('lodash');
 const api = require('./api');
 const moment = require('moment');
-const { storeFetched, storeNormalized, toLowestCommonUnit } = require('../../core/helpers');
+const { processTransactions, toLowestCommonUnit } = require('../../core/helpers');
 const schema = require('./schemas/transaction');
 
 /**
@@ -18,37 +18,19 @@ const downloadTransactions = (ctx) => async (account, fromDate) => {
     .toISOString();
 
   // prep fetch params
-  const fetchTransactions = prepFetchTransactions(ctx, {
+  const fetchTransactionsFn = fetchTransactions(ctx, {
     perPage: 1000,
     from,
     to,
   });
 
-  // fetch and save transactions based on date
-  const transactions = [];
-  while (true) {
-    // fetch next set of data from API
-    const rows = await fetchTransactions();
-
-    // no rows? bail
-    if (!rows.length) {
-      break;
-    }
-
-    // normalize
-    const normalized = await storeNormalizedTransactions(ctx, rows, account);
-    transactions.push(...normalized);
-  }
-
-  // no transactions?
-  if (!transactions.length) {
-    return [];
-  }
-
-  // return unique set of transactions
-  return _(transactions)
-    .uniqBy('id')
-    .value();
+  return processTransactions(
+    ctx,
+    schema,
+    fetchTransactionsFn,
+    getTransactionProviderRef,
+    normalizeTransaction(account),
+  );
 };
 
 /**
@@ -57,15 +39,12 @@ const downloadTransactions = (ctx) => async (account, fromDate) => {
  * @param apiParams
  * @return {Promise<Array|Knex.QueryBuilder>}
  */
-const prepFetchTransactions = (ctx, apiParams) => {
-  const { log } = ctx;
+const fetchTransactions = (ctx, apiParams) => {
   const req = api(ctx);
   let oldestTransaction = null;
 
   return async () => {
-    // fetch transactions from api
     const data = await req.fetchTransactions(apiParams);
-    log.trace('%d transactions fetched', data.length);
 
     // get `to` date for next set of records
     const prevTransaction = oldestTransaction;
@@ -81,78 +60,60 @@ const prepFetchTransactions = (ctx, apiParams) => {
       .endOf('day')
       .toISOString();
 
-    // store fetched data in db
-    return storeFetchedTransactions(ctx, data);
+    return data;
   };
 };
 
 /**
- * Store fetched transactions in db
- * @param ctx
- * @param data
- * @return {Promise<*|Knex.QueryBuilder>}
+ * transaction provider ref getter
+ * @param transaction
+ * @return {*}
  */
-const storeFetchedTransactions = (ctx, data) => {
-  return storeFetched(ctx, data, 'transaction', 'id');
+const getTransactionProviderRef = (transaction) => {
+  return transaction.id;
 };
 
 /**
- * Normalize transactions from api
- * @param ctx
- * @param rows
- * @param matchAccount
- * @return {Promise<*|Knex.QueryBuilder>}
+ * Normalize transaction
+ * @param account
+ * @return {Function}
  */
-const storeNormalizedTransactions = async (ctx, rows, matchAccount = null) => {
-  const { log, model, providerRow, userRow } = ctx;
+const normalizeTransaction = (account) => (row) => {
+  const data = row.data;
 
-  // get all accounts (Revolut Business API returns transactions for all accounts at once)
-  // meaning it returns all transactions for all currencies
-  const accounts = await model('account').find({
-    user_id: userRow.id,
-    provider_id: providerRow.id,
-  });
+  // only normalize completed transactions
+  if (!data.completed_at) {
+    return null;
+  }
 
-  return storeNormalized(ctx, rows, 'transaction', schema, (row) => {
-    const data = row.data;
-
-    // only normalize completed transactions
-    if (!data.completed_at) {
-      log.info('[apis.id=%d] Ignoring transaction with no completed_at date set', row.id);
-      return;
+  // transactions might have two legs (transfer between accounts)
+  // so we to create two separate transactions
+  for (const leg of data.legs) {
+    // skip normalizing transactions that aren't matching `matchAccount`
+    if (account.provider_ref !== leg.account_id) {
+      continue;
     }
 
-    // transactions might have two legs (transfer between accounts)
-    // so we to create two separate transactions
-    for (const leg of data.legs) {
-      const account = accounts.find((a) => a.provider_ref === leg.account_id);
+    const payee = leg.description;
+    const amount = toLowestCommonUnit(leg.amount);
+    const date = data.created_at && moment(data.created_at).format('YYYY-MM-DD');
+    const isTransfer = data.legs.length === 2 && ['exchange', 'transfer'].includes(data.type) ? 1 : 0;
+    // const note = data.reference || null;
 
-      // skip normalizing transactions that aren't matching `matchAccount`
-      if (matchAccount && matchAccount.id !== account.id) {
-        continue;
-      }
-
-      const payee = leg.description;
-      const amount = toLowestCommonUnit(leg.amount);
-      const date = data.created_at && moment(data.created_at).format('YYYY-MM-DD');
-      const isTransfer = data.legs.length === 2 && ['exchange', 'transfer'].includes(data.type) ? 1 : 0;
-      // const note = data.reference || null;
-
-      return {
-        account_id: account.id,
-        provider_ref: leg.leg_id,
-        payee,
-        amount,
-        date,
-        is_transfer: isTransfer,
-        // note,
-      };
-    }
-  });
+    return {
+      account_id: account.id,
+      provider_ref: leg.leg_id,
+      payee,
+      amount,
+      date,
+      is_transfer: isTransfer,
+      // note,
+    };
+  }
 };
 
 module.exports = {
   downloadTransactions,
-  storeFetchedTransactions,
-  storeNormalizedTransactions,
+  getTransactionProviderRef,
+  normalizeTransaction,
 };

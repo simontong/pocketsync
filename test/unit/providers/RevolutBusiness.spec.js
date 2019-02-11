@@ -3,8 +3,14 @@
 const { app, config, expect } = require('../../init');
 const fxAccounts = require('../../fixtures/RevolutBusiness/accounts');
 const fxTransactions = require('../../fixtures/RevolutBusiness/transactions');
-const { storeFetchedAccounts, storeNormalizedAccounts } = require('../../../app/providers/RevolutBusiness/downloadAccounts');
-const { storeFetchedTransactions, storeNormalizedTransactions } = require('../../../app/providers/RevolutBusiness/downloadTransactions');
+const { storeFetched, storeNormalized } = require('../../../app/core/helpers');
+const { normalizeAccount, getAccountProviderRef } = require('../../../app/providers/RevolutBusiness/downloadAccounts');
+const accountSchema = require('../../../app/providers/RevolutBusiness/schemas/account');
+const {
+  normalizeTransaction,
+  getTransactionProviderRef,
+} = require('../../../app/providers/RevolutBusiness/downloadTransactions');
+const transactionSchema = require('../../../app/providers/RevolutBusiness/schemas/transaction');
 
 describe('Providers: RevolutBusiness', () => {
   let appCtx;
@@ -15,14 +21,15 @@ describe('Providers: RevolutBusiness', () => {
   });
 
   after(async () => {
-    if (appCtx && appCtx.db) await appCtx.db.destroy();    if (appCtx.db) await appCtx.db.destroy();
+    if (appCtx && appCtx.db) await appCtx.db.destroy();
+    if (appCtx.db) await appCtx.db.destroy();
   });
 
   /**
    * test
    */
   it('should store API request for accounts in db', async () => {
-    const accounts = await storeFetchedAccounts(providerCtx, fxAccounts);
+    const accounts = await storeFetched(providerCtx, fxAccounts, 'account', getAccountProviderRef);
 
     expect(accounts).to.be.an('array');
     expect(accounts).to.have.lengthOf(fxAccounts.length);
@@ -47,8 +54,8 @@ describe('Providers: RevolutBusiness', () => {
    * test
    */
   it('should normalize API requests for accounts', async () => {
-    const rows = await storeFetchedAccounts(providerCtx, fxAccounts);
-    const accounts = await storeNormalizedAccounts(providerCtx, rows);
+    const rows = await storeFetched(providerCtx, fxAccounts, 'account', getAccountProviderRef);
+    const accounts = await storeNormalized(providerCtx, rows, 'account', accountSchema, normalizeAccount);
 
     expect(accounts).to.be.an('array');
     expect(accounts).to.have.lengthOf(rows.length);
@@ -71,7 +78,7 @@ describe('Providers: RevolutBusiness', () => {
    * test
    */
   it('should store API request for transactions in db', async () => {
-    const transactions = await storeFetchedTransactions(providerCtx, fxTransactions);
+    const transactions = await storeFetched(providerCtx, fxTransactions, 'transaction', getTransactionProviderRef);
 
     expect(transactions).to.be.an('array');
     expect(transactions).to.have.lengthOf(fxTransactions.length);
@@ -97,8 +104,14 @@ describe('Providers: RevolutBusiness', () => {
    */
   it('should normalize API requests for transactions', async () => {
     const account = await providerCtx.db.table('accounts').first();
-    const rows = await storeFetchedTransactions(providerCtx, fxTransactions);
-    const transactions = await storeNormalizedTransactions(providerCtx, rows, account);
+    const rows = await storeFetched(providerCtx, fxTransactions, 'transaction', getTransactionProviderRef);
+    const transactions = await storeNormalized(
+      providerCtx,
+      rows,
+      'transaction',
+      transactionSchema,
+      normalizeTransaction(account),
+    );
 
     expect(transactions).to.be.an('array');
     expect(transactions).to.have.lengthOf(rows.length);

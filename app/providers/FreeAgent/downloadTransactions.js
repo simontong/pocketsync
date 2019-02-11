@@ -4,7 +4,7 @@ const _ = require('lodash');
 const { api, extractId } = require('./api');
 const moment = require('moment');
 const shouldRefreshToken = require('./shouldRefreshToken');
-const { storeFetched, storeNormalized, toLowestCommonUnit } = require('../../core/helpers');
+const { processTransactions, toLowestCommonUnit } = require('../../core/helpers');
 const schema = require('./schemas/transaction');
 
 /**
@@ -13,19 +13,18 @@ const schema = require('./schemas/transaction');
  * @return {Function}
  */
 const newestTransactionDate = (ctx) => async (account) => {
-  const rows = await prepFetchTransactions(ctx, {
+  const data = await fetchTransactions(ctx, {
     bankAccount: account.provider_ref,
     perPage: 1,
   })();
 
   // no rows found? return null
-  if (!rows.length) {
+  if (!data.length) {
     return null;
   }
 
-  // get most up to date transaction date
-  const newestTransaction = _.maxBy(rows, (i) => moment(i.data.dated_on).valueOf());
-  return newestTransaction.data.dated_on;
+  // figure out more recently completed transaction
+  return _.maxBy(data, (i) => moment(i.dated_on).valueOf()).dated_on;
 };
 
 /**
@@ -34,42 +33,23 @@ const newestTransactionDate = (ctx) => async (account) => {
  * @return {Function}
  */
 const downloadTransactions = (ctx) => async (account, fromDate) => {
-  // format from date (if passed)
   if (fromDate) {
     fromDate = moment(fromDate).format('YYYY-MM-DD');
   }
 
-  // prep fetch params
-  const fetchTransactions = prepFetchTransactions(ctx, {
+  // prep fetch function
+  const fetchTransactionsFn = fetchTransactions(ctx, {
     bankAccount: account.provider_ref,
     fromDate,
   });
 
-  // fetch and save transactions based on date
-  const transactions = [];
-  while (true) {
-    // fetch next set of data from API
-    const rows = await fetchTransactions();
-
-    // no data? bail
-    if (!rows.length) {
-      break;
-    }
-
-    // normalize fetched data
-    const normalized = await storeNormalizedTransactions(ctx, rows, account);
-    transactions.push(...normalized);
-  }
-
-  // no transactions?
-  if (!transactions.length) {
-    return [];
-  }
-
-  // return unique set of transactions
-  return _(transactions)
-    .uniqBy('id')
-    .value();
+  return processTransactions(
+    ctx,
+    schema,
+    fetchTransactionsFn,
+    getTransactionProviderRef,
+    normalizeTransaction(account),
+  );
 };
 
 /**
@@ -78,12 +58,10 @@ const downloadTransactions = (ctx) => async (account, fromDate) => {
  * @param apiParams
  * @return {Promise<function(): Promise<*|Knex.QueryBuilder>>}
  */
-const prepFetchTransactions = (ctx, apiParams) => {
+const fetchTransactions = (ctx, apiParams) => {
   const req = api(ctx);
-  const { log } = ctx;
 
   return async function fetchTransactions() {
-    // fetch transactions from api
     let data;
     try {
       data = await req.fetchTransactions(apiParams);
@@ -92,61 +70,50 @@ const prepFetchTransactions = (ctx, apiParams) => {
       return fetchTransactions();
     }
 
-    // log fetched
-    log.trace('%d transactions fetched', data.bank_transactions.length);
-
     // next page
     apiParams.page = (apiParams.page || 1) + 1;
 
-    // store fetched data in db
-    return storeFetchedTransactions(ctx, data);
+    return data.bank_transactions;
   };
 };
 
 /**
- * Store fetched transactions in db
- * @param ctx
- * @param data
- * @return {Promise<*|Knex.QueryBuilder>}
+ * transaction provider ref getter
+ * @param transaction
+ * @return {*}
  */
-const storeFetchedTransactions = (ctx, data) => {
-  return storeFetched(ctx, data.bank_transactions, 'transaction', (item) => {
-    return extractId('bank_transactions', item.url);
-  });
+const getTransactionProviderRef = (transaction) => {
+  return extractId('bank_transactions', transaction.url);
 };
 
 /**
- * Normalize transactions from api
- * @param ctx
- * @param rows
+ * Normalize transaction
  * @param account
- * @return {Promise<*|Knex.QueryBuilder>}
+ * @return {*}
  */
-const storeNormalizedTransactions = async (ctx, rows, account) => {
-  return storeNormalized(ctx, rows, 'transaction', schema, (row) => {
-    const data = row.data;
+const normalizeTransaction = (account) => (row) => {
+  const data = row.data;
 
-    // normalize
-    const [, payee, memo] = data.description.match(/(.+)\/(.*)\/(.*)\/$/);
-    const amount = toLowestCommonUnit(data.amount);
-    const date = moment(data.dated_on).format('YYYY-MM-DD');
-    const isTransfer = _.get(row, 'bank_transaction_explanations.0.linked_transfer_account') ? 1 : 0;
+  // normalize
+  const [, payee, memo] = data.description.match(/(.+)\/(.*)\/(.*)\/$/);
+  const amount = toLowestCommonUnit(data.amount);
+  const date = moment(data.dated_on).format('YYYY-MM-DD');
+  const isTransfer = _.get(row, 'bank_transaction_explanations.0.linked_transfer_account') ? 1 : 0;
 
-    return {
-      account_id: account.id,
-      provider_ref: row.provider_ref,
-      payee,
-      amount,
-      date,
-      is_transfer: isTransfer,
-      // memo,
-    };
-  });
+  return {
+    account_id: account.id,
+    provider_ref: row.provider_ref,
+    payee,
+    amount,
+    date,
+    is_transfer: isTransfer,
+    // memo,
+  };
 };
 
 module.exports = {
   newestTransactionDate,
   downloadTransactions,
-  storeFetchedTransactions,
-  storeNormalizedTransactions,
+  getTransactionProviderRef,
+  normalizeTransaction,
 };

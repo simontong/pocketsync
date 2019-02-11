@@ -3,8 +3,11 @@
 const { app, config, expect } = require('../../init');
 const fxAccounts = require('../../fixtures/FreeAgent/accounts');
 const fxTransactions = require('../../fixtures/FreeAgent/transactions');
-const { storeFetchedAccounts, storeNormalizedAccounts } = require('../../../app/providers/FreeAgent/downloadAccounts');
-const { storeFetchedTransactions, storeNormalizedTransactions } = require('../../../app/providers/FreeAgent/downloadTransactions');
+const { storeFetched, storeNormalized } = require('../../../app/core/helpers');
+const { normalizeAccount, getAccountProviderRef } = require('../../../app/providers/FreeAgent/downloadAccounts');
+const accountSchema = require('../../../app/providers/FreeAgent/schemas/account');
+const { normalizeTransaction, getTransactionProviderRef } = require('../../../app/providers/FreeAgent/downloadTransactions');
+const transactionSchema = require('../../../app/providers/FreeAgent/schemas/transaction');
 
 describe('Providers: FreeAgent', () => {
   let appCtx;
@@ -22,7 +25,7 @@ describe('Providers: FreeAgent', () => {
    * test
    */
   it('should store API request for accounts in db', async () => {
-    const accounts = await storeFetchedAccounts(providerCtx, fxAccounts);
+    const accounts = await storeFetched(providerCtx, fxAccounts.bank_accounts, 'account', getAccountProviderRef);
 
     expect(accounts).to.be.an('array');
     expect(accounts).to.have.lengthOf(fxAccounts.bank_accounts.length);
@@ -47,8 +50,8 @@ describe('Providers: FreeAgent', () => {
    * test
    */
   it('should normalize API requests for accounts', async () => {
-    const rows = await storeFetchedAccounts(providerCtx, fxAccounts);
-    const accounts = await storeNormalizedAccounts(providerCtx, rows);
+    const rows = await storeFetched(providerCtx, fxAccounts.bank_accounts, 'account', getAccountProviderRef);
+    const accounts = await storeNormalized(providerCtx, rows, 'account', accountSchema, normalizeAccount);
 
     expect(accounts).to.be.an('array');
     expect(accounts).to.have.lengthOf(rows.length);
@@ -71,7 +74,7 @@ describe('Providers: FreeAgent', () => {
    * test
    */
   it('should store API request for transactions in db', async () => {
-    const transactions = await storeFetchedTransactions(providerCtx, fxTransactions);
+    const transactions = await storeFetched(providerCtx, fxTransactions.bank_transactions, 'transaction', getTransactionProviderRef);
 
     expect(transactions).to.be.an('array');
     expect(transactions).to.have.lengthOf(fxTransactions.bank_transactions.length);
@@ -97,8 +100,8 @@ describe('Providers: FreeAgent', () => {
    */
   it('should normalize API requests for transactions', async () => {
     const account = await providerCtx.db.table('accounts').first();
-    const rows = await storeFetchedTransactions(providerCtx, fxTransactions);
-    const transactions = await storeNormalizedTransactions(providerCtx, rows, account);
+    const rows = await storeFetched(providerCtx, fxTransactions.bank_transactions, 'transaction', getTransactionProviderRef);
+    const transactions = await storeNormalized(providerCtx, rows, 'transaction', transactionSchema, normalizeTransaction(account));
 
     expect(transactions).to.be.an('array');
     expect(transactions).to.have.lengthOf(rows.length);

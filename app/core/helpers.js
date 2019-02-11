@@ -1,5 +1,6 @@
 'use strict';
 
+const _ = require('lodash');
 const Ajv = require('ajv');
 
 // ISO 4217 decimals - https://en.wikipedia.org/wiki/ISO_4217#cite_note-ReferenceA-7
@@ -73,20 +74,89 @@ const resultCounter = () => {
 };
 
 /**
+ * Process accounts (fetch, store, normalize)
+ * @param ctx
+ * @param schema
+ * @param fetchFn
+ * @param getProviderRef
+ * @param normalizeFn
+ * @return {Promise<Array|*>}
+ */
+const processAccounts = async (ctx, schema, fetchFn, getProviderRef, normalizeFn) => {
+  const { log } = ctx;
+
+  // fetch data from API
+  const data = await fetchFn(ctx);
+  log.trace('%d accounts fetched', data.length);
+
+  // no data? bail
+  if (!data.length) {
+    return [];
+  }
+
+  // store api data
+  const rows = await storeFetched(ctx, data, 'account', getProviderRef);
+
+  // store fetched data in db
+  return storeNormalized(ctx, rows, 'account', schema, normalizeFn);
+};
+
+/**
+ * Process transactions (fetch, store, normalize)
+ * @param ctx
+ * @param schema
+ * @param fetchFn
+ * @param getProviderRef
+ * @param normalizeFn
+ * @return {Promise<Array|*>}
+ */
+const processTransactions = async (ctx, schema, fetchFn, getProviderRef, normalizeFn) => {
+  const { log } = ctx;
+
+  // fetch and save transactions based on date
+  const transactions = [];
+  while (true) {
+    // fetch next set of data from API
+    const data = await fetchFn();
+    log.trace('%d transactions fetched', data.length);
+
+    // no rows? bail
+    if (!data.length) {
+      break;
+    }
+
+    // store api data
+    const rows = await storeFetched(ctx, data, 'transaction', getProviderRef);
+
+    // normalize
+    const normalized = await storeNormalized(ctx, rows, 'transaction', schema, normalizeFn);
+    transactions.push(...normalized);
+  }
+
+  // no transactions?
+  if (!transactions.length) {
+    return [];
+  }
+
+  // return unique set of transactions
+  return _.uniqBy(transactions, 'id');
+};
+
+/**
  * Store api fetched data in db
  * @param ctx
  * @param data
  * @param type
- * @param providerRefName
+ * @param getProviderRef
  * @return {Promise<*|Knex.QueryBuilder>}
  */
-const storeFetched = async (ctx, data, type, providerRefName) => {
+const storeFetched = async (ctx, data, type, getProviderRef) => {
   const { log, model, providerRow, userRow } = ctx;
 
   // save api fetch
   const countResult = resultCounter();
   for (const item of data) {
-    const providerRef = typeof providerRefName === 'function' ? providerRefName(item) : item[providerRefName];
+    const providerRef = typeof getProviderRef === 'function' ? getProviderRef(item) : item[getProviderRef];
     countResult.add(await model('api').updateOrCreateApi(type, userRow.id, providerRow.id, providerRef, item));
   }
   const { created, updated, total, ids } = countResult.get();
@@ -161,6 +231,8 @@ module.exports = {
   resultCounter,
   toLowestCommonUnit,
   fromLowestCommonUnit,
+  processAccounts,
+  processTransactions,
   storeFetched,
   storeNormalized,
 };
