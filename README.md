@@ -12,6 +12,7 @@ Synchronize bank transactions between PocketSmith, FreeAgent and Revolut Busines
   - [Running a Sync Profile](#running-a-sync-profile)
 - [Execute API commands](#execute-api-commands)
 - [Configuring Multiple Users for Single Provider](#configuring-multiple-users-for-single-provider)
+- [Changelog](#changelog)
 - [License](#license)
 
 <a name="getting-started"></a>
@@ -299,6 +300,23 @@ Create sync profile:
 ```bash
 node . -u johnsmith create-sync
 ```
+
+<a name="changelog"></a>
+
+# Changelog
+
+## [1.1.0]
+
+### Changed
+
+- Refactored download accounts/transactions to abstract away duplicate code and make provider interface simpler.
+- Updated tests to reflect refactorings.
+
+## [1.0.0]
+
+### Added
+
+- Released first version
 
 <a name="license"></a>
 
