@@ -305,14 +305,14 @@ node . -u johnsmith create-sync
 
 # Changelog
 
-## [1.1.0]
+## 1.1.0
 
 ### Changed
 
 - Refactored download accounts/transactions to abstract away duplicate code and make provider interface simpler.
 - Updated tests to reflect refactorings.
 
-## [1.0.0]
+## 1.0.0
 
 ### Added
 
