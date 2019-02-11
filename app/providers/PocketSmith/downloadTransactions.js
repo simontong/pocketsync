@@ -44,7 +44,13 @@ const downloadTransactions = (ctx) => async (account, fromDate) => {
     endDate,
   });
 
-  return processTransactions(ctx, schema, fetchTransactionsFn, 'id', normalizeTransaction(account));
+  return processTransactions(
+    ctx,
+    schema,
+    fetchTransactionsFn,
+    getTransactionProviderRef,
+    normalizeTransaction(account),
+  );
 };
 
 /**
