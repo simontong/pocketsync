@@ -17,6 +17,7 @@ module.exports = (config, program) => {
 /**
  * command executor
  * @returns {Promise<void>}
+ * todo: break this into smaller testable units
  */
 const main = async (ctx, sourceProviderName, targetProviderName) => {
   const { model, loadProvider } = await ctx;
