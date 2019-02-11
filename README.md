@@ -303,23 +303,23 @@ node . -u johnsmith create-sync
 
 <a name="changelog"></a>
 
-# Changelog
+## Changelog
 
-## 1.1.0
+### 1.1.0
 
-### Changed
+> #### Changed
+>
+> - Refactored download accounts/transactions to abstract away duplicate code and make provider interface simpler.
+> - Updated tests to reflect refactorings.
 
-- Refactored download accounts/transactions to abstract away duplicate code and make provider interface simpler.
-- Updated tests to reflect refactorings.
+### 1.0.0
 
-## 1.0.0
-
-### Added
-
-- Released first version
+> #### Added
+>
+> - Initial code.
 
 <a name="license"></a>
 
-# License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
