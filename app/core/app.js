@@ -1,9 +1,8 @@
 'use strict';
 
-const _ = require('lodash');
 const useLog = require('./useLog');
 const useProvider = require('./useProvider');
-const { connectDb, useModels } = require('./useDb');
+const { useDb, useModels } = require('./useDb');
 
 /**
  * @param config
@@ -11,8 +10,7 @@ const { connectDb, useModels } = require('./useDb');
  */
 const app = (config) => {
   let log = useLog(config);
-  let db;
-  let model;
+  const connectDb = useDb(config, log);
 
   /**
    * app init
@@ -20,12 +18,8 @@ const app = (config) => {
    * @return {Promise<{object}>}
    */
   const init = async (user) => {
-    // connect db
-    const noDbConnection = _.get(db, 'client.pool.destroyed', true);
-    if (noDbConnection === true) {
-      db = await connectDb(config, log);
-      model = useModels(db);
-    }
+    const db = await connectDb(config, log);
+    const model = useModels(db);
 
     // fetch user
     const userRow = await model('user').byUser(user);

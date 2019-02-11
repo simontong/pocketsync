@@ -1,5 +1,6 @@
 'use strict';
 
+const _ = require('lodash');
 const knex = require('knex');
 const path = require('path');
 
@@ -8,24 +9,33 @@ const path = require('path');
  * @param log
  * @return {Knex.QueryBuilder | Knex}
  */
-const connectDb = async (config, log) => {
+const useDb = (config, log) => {
   const opts = config.database[process.env.NODE_ENV || 'development'];
+  let connection;
 
-  // prep connection
-  const connection = knex(opts);
+  return async () => {
+    // check if connection was closed or has not yet been opened
+    const connectionClosed = _.get(connection, 'client.pool.destroyed', true);
+    if (!connectionClosed) {
+      return connection;
+    }
 
-  // execute query to make sure connection actually works
-  try {
-    await connection.raw('select 1 as connectionCheck');
-  } catch (e) {
-    await connection.destroy();
-    throw e;
-  }
+    // prep connection
+    connection = knex(opts);
 
-  // success, log db opened
-  log.trace(`Open ${opts.connection.database} database`);
+    // execute query to make sure connection actually works
+    try {
+      await connection.raw('select 1 as connectionCheck');
+    } catch (e) {
+      await connection.destroy();
+      throw e;
+    }
 
-  return connection;
+    // success, log db opened
+    log.trace(`Open ${opts.connection.database} database`);
+
+    return connection;
+  };
 };
 
 /**
@@ -39,4 +49,4 @@ const useModels = (db) => {
   };
 };
 
-module.exports = { connectDb, useModels };
+module.exports = { useDb, useModels };
