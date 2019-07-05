@@ -7,9 +7,6 @@ const { js2xml } = require('xml-js');
 const moment = require('moment');
 const shouldRefreshToken = require('./shouldRefreshToken');
 
-// bank explanations require a category, so pick the default
-const categoryIdDefault = 285; // Accommodation and Meals
-
 /**
  * Format memo to store sync data
  * @param providerCode
@@ -70,21 +67,6 @@ const uploadTransactions = (ctx) => async ({ sourceProvider, sourceAccount, targ
       continue;
     }
 
-    // prep attachment
-    let attachment;
-    if (sourceTransaction.attachments && sourceTransaction.attachments.length) {
-      const file = sourceTransaction.attachments[0];
-      const data = await fetchAttachment(ctx, file.url);
-      if (data) {
-        attachment = {
-          data,
-          file_name: file.filename,
-          description: file.description,
-          content_type: file.type,
-        };
-      }
-    }
-
     /**
      * todo: abstract
      */
@@ -115,7 +97,27 @@ const uploadTransactions = (ctx) => async ({ sourceProvider, sourceAccount, targ
       targetProvider.providerRow.id,
       category.id,
     ];
-    const categoryId = _.get(await ctx.db.raw(q, params), '0.0.provider_ref', categoryIdDefault);
+    const categoryId = _.get(await ctx.db.raw(q, params), '0.0.provider_ref');
+
+    // if no category then go no further
+    if (!categoryId) {
+      continue;
+    }
+
+    // prep attachment
+    let attachment;
+    if (sourceTransaction.attachments && sourceTransaction.attachments.length) {
+      const file = sourceTransaction.attachments[0];
+      const data = await fetchAttachment(ctx, file.url);
+      if (data) {
+        attachment = {
+          data,
+          file_name: file.filename,
+          description: file.description,
+          content_type: file.type,
+        };
+      }
+    }
 
     // upload explanation
     await req.createTransactionExplanation({
