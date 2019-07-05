@@ -32,6 +32,7 @@ module.exports = (config, program) => {
  * @param unattended
  * @param runAll
  * @returns {Promise<void>}
+ * todo: break this into smaller testable units
  */
 const main = async (ctx, name, { dryRun, listSyncs, unattended, runAll }) => {
   const { model, loadProvider, userRow } = await ctx;
