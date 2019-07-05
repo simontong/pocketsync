@@ -34,6 +34,7 @@ const downloadTransactions = (ctx) => async (account, fromDate) => {
   let endDate;
   if (fromDate) {
     fromDate = moment(fromDate).format('YYYY-MM-DD');
+    fromDate = moment('2019-01-01').format('YYYY-MM-DD');
     endDate = moment().format('YYYY-MM-DD');
   }
 
@@ -145,6 +146,11 @@ const getTransactionProviderRef = (transaction) => {
  */
 const normalizeTransaction = (account, categories) => (row) => {
   const data = row.data;
+
+  // only normalize transactions that have been reviewed
+  if (data.needs_review) {
+    return null;
+  }
 
   // get category
   const categoryId = Number(_.get(data, 'category.id', 0));
