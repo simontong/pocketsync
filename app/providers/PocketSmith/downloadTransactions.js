@@ -34,7 +34,6 @@ const downloadTransactions = (ctx) => async (account, fromDate) => {
   let endDate;
   if (fromDate) {
     fromDate = moment(fromDate).format('YYYY-MM-DD');
-    fromDate = moment('2019-01-01').format('YYYY-MM-DD');
     endDate = moment().format('YYYY-MM-DD');
   }
 
