@@ -43,6 +43,9 @@ const uploadTransactions = (ctx) => async ({ sourceProvider, sourceAccount, targ
     return uploadTransactions(targetAccount, transactions, onTransactionUploaded);
   }
 
+  // wait for a sec, so we can grab the uploadedTransactions
+  await new Promise(resolve => setTimeout(resolve, 3000));
+
   // get last uploaded transactions
   const uploadedTransactions = await req.fetchTransactions({
     bankAccount: targetAccount.provider_ref,
@@ -109,7 +112,8 @@ const uploadTransactions = (ctx) => async ({ sourceProvider, sourceAccount, targ
     const params = [
       targetProvider.providerRow.id,
       category.id,
-      targetProvider.providerRow.id, category.id,
+      targetProvider.providerRow.id,
+      category.id,
     ];
     const categoryId = _.get(await ctx.db.raw(q, params), '0.0.provider_ref', categoryIdDefault);
 
