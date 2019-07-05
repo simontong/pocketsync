@@ -1,5 +1,7 @@
 exports.up = async function(knex) {
   await knex.schema.createTable('syncs', function(t) {
+    t.charset('utf8mb4');
+    t.collate('utf8mb4_unicode_ci');
     t.increments();
     t.integer('source_account_id').notNullable().unsigned().references('id').inTable('accounts');
     t.integer('target_account_id').notNullable().unsigned().references('id').inTable('accounts');

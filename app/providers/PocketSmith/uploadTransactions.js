@@ -9,7 +9,7 @@ const moment = require('moment');
  * @param ctx
  * @return {Function}
  */
-const uploadTransactions = (ctx) => async (account, transactions, onTransactionUploaded) => {
+const uploadTransactions = (ctx) => async ({ targetAccount, transactions, onTransactionUploaded}) => {
   const req = api(ctx);
 
   // upload transactions
@@ -27,7 +27,7 @@ const uploadTransactions = (ctx) => async (account, transactions, onTransactionU
     };
 
     // push transactions
-    await req.createTransaction(account.provider_ref, data);
+    await req.createTransaction(targetAccount.provider_ref, data);
 
     // execute onTransactionUploaded for all transactions as we sent them up in a statement
     if (typeof onTransactionUploaded === 'function') {

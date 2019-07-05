@@ -50,21 +50,23 @@ const main = async (ctx, name, { dryRun, listSyncs, unattended, runAll }) => {
     return;
   }
 
-  // sync name exists
-  if (name && !syncs.find((s) => s.name === name)) {
-    throw invalidParamError(
-      'Sync profile %s does not exist.\nAvailable sync profiles:\n- %s',
-      name,
-      syncs.map((s) => s.name).join('\n- '),
-    );
-  }
-
-  // run all
+  // run all if `--run-all` passed
   if (runAll) {
     syncNames = _.map(syncs, 'name');
   }
-  // get name of sync
-  else if (!name) {
+  // run single if `name` param passed
+  else if (name) {
+    if (!syncs.find((s) => s.name === name)) {
+      throw invalidParamError(
+        'Sync profile %s does not exist.\nAvailable sync profiles:\n- %s',
+        name,
+        syncs.map((s) => s.name).join('\n- '),
+      );
+    }
+    syncNames = [name];
+  }
+  // else ask for sync to run
+  else {
     if (unattended) {
       throw invalidParamError('Missing sync profile argument');
     }
@@ -299,7 +301,15 @@ const main = async (ctx, name, { dryRun, listSyncs, unattended, runAll }) => {
       targetProviderName,
       targetAccount.name,
     );
-    await targetProvider.fn.uploadTransactions(targetAccount, transactions, onTransactionUploaded(sync));
+
+    await targetProvider.fn.uploadTransactions({
+      sourceProvider,
+      sourceAccount,
+      targetProvider,
+      targetAccount,
+      transactions,
+      onTransactionUploaded: onTransactionUploaded(sync),
+    });
     console.log('Sync completed');
   }
 };

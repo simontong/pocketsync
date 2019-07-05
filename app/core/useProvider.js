@@ -102,6 +102,7 @@ const addProviders = async (appCtx) => {
 
     // prep meta
     const params = {
+      code: meta.code,
       name,
       is_source: !!meta.isSource,
       is_target: !!meta.isTarget,

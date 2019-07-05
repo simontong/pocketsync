@@ -13,7 +13,7 @@ const api = (db) => ({
    * @return {string[]}
    */
   get types() {
-    return ['account', 'transaction'];
+    return ['account', 'category', 'transaction'];
   },
 
   /**

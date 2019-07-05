@@ -1,9 +1,8 @@
 'use strict';
 
 const _ = require('lodash');
-const { api, extractId } = require('./api');
+const api = require('./api');
 const { processCategories } = require('../../core/helpers');
-const shouldRefreshToken = require('./shouldRefreshToken');
 const schema = require('./schemas/category');
 
 /**
@@ -22,41 +21,82 @@ const downloadCategories = (ctx) => async () => {
  */
 const fetchCategories = async (ctx) => {
   const req = api(ctx);
-  let data;
-  try {
-    data = await req.fetchCategories();
-  } catch (e) {
-    await shouldRefreshToken(ctx, e);
-    return fetchCategories(ctx);
-  }
 
-  // flatten data (it gets returned as: {income_categories: [], bank_categories: []} etc.)
-  return _.flatMap(data);
+  // fetch categories
+  const me = await req.fetchMe();
+  const data = await req.fetchCategories(me.id);
+
+  /**
+   * Recurse to get flat array
+   * @param rows
+   * @param children
+   * @returns {Array}
+   */
+  const recurse = (rows, children = []) => {
+    children.push(...rows);
+    for (const row of rows) {
+      if (Array.isArray(row.children) && row.children.length) {
+        recurse(row.children, children);
+      }
+    }
+    return children;
+  };
+
+  return recurse(data);
 };
 
 /**
  * category provider ref getter
- * @param transaction
+ * @param category
  * @return {*}
  */
-const getCategoryProviderRef = (transaction) => {
-  return extractId('categories', transaction.url);
+const getCategoryProviderRef = (category) => {
+  return category.id;
 };
 
 /**
  * Normalize API data from category fetch
  * @param row
+ * @param rows
  * @return {*}
  */
-const normalizeCategory = (row) => {
+const normalizeCategory = (row, rows) => {
   const data = row.data;
+
+  /**
+   * Recurse to find tree
+   * @param rows
+   * @param tree
+   * @returns {Array}
+   */
+  const recurse = (rows, tree = []) => {
+    const parentId = tree[0].parent_id;
+    if (!parentId) {
+      return tree;
+    }
+
+    for (const row of rows) {
+      if (parentId === row.data.id) {
+        tree.unshift(row.data);
+        recurse(rows, tree);
+        break;
+      }
+    }
+    return tree;
+  };
+
+  // build tree
+  const tree = JSON.stringify(
+    _.map(recurse(rows, [data]), 'title'),
+  );
 
   // normalize
   return {
     user_id: row.user_id,
     provider_id: row.provider_id,
     provider_ref: row.provider_ref,
-    name: data.description,
+    name: data.title,
+    tree,
   };
 };
 

@@ -40,8 +40,17 @@ module.exports = (ctx) => {
      * Fetch user
      * @returns {Promise<*>}
      */
-    fetchMe() {
+    fetchMe () {
       return call('me');
+    },
+
+    /**
+     * fetch transaction categories
+     * @param userId
+     */
+    fetchCategories(userId) {
+      if (!userId) throw invalidParamError('PocketSmith missing `userId` argument');
+      return call(`users/${userId}/categories`);
     },
 
     /**
@@ -49,7 +58,7 @@ module.exports = (ctx) => {
      * @param userId
      * @returns {Promise<*>}
      */
-    fetchTransactionAccounts(userId) {
+    fetchTransactionAccounts (userId) {
       if (!userId) throw invalidParamError('PocketSmith missing `userId` argument');
       return call(`users/${userId}/transaction_accounts`);
     },
@@ -63,7 +72,7 @@ module.exports = (ctx) => {
      * @param perPage
      * @returns {Promise<void>}
      */
-    fetchTransactions({ accountId, perPage = 100, page = 1, startDate, endDate }) {
+    fetchTransactions ({ accountId, perPage = 100, page = 1, startDate, endDate }) {
       if (!accountId) throw invalidParamError('PocketSmith missing `accountId` argument');
 
       const qs = {
@@ -77,12 +86,20 @@ module.exports = (ctx) => {
     },
 
     /**
+     * Fetch attachments for a transaction
+     * @param transactionId
+     */
+    fetchTransactionAttachments (transactionId) {
+      return call(`transactions/${transactionId}/attachments`);
+    },
+
+    /**
      * Create transaction
      * @param accountId
      * @param transaction
      * @return {Promise<*>}
      */
-    createTransaction(accountId, transaction) {
+    createTransaction (accountId, transaction) {
       if (!accountId) throw invalidParamError('PocketSmith missing `accountId` argument');
       if (!transaction) throw invalidParamError('PocketSmith missing `transaction` argument');
 

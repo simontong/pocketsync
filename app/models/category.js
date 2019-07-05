@@ -3,17 +3,17 @@
 const _ = require('lodash');
 const baseModel = require('../models/baseModel');
 
-const tableName = 'accounts';
+const tableName = 'categories';
 
-const account = (db) => ({
+const category = (db) => ({
   ...baseModel(db, tableName),
 
   /**
-   * Update or create account
+   * Update or create category
    * @param params
    * @return {*|Promise<Knex.QueryBuilder>}
    */
-  updateOrCreateAccount(params) {
+  updateOrCreateCategory(params) {
     const where = {
       user_id: params.user_id,
       provider_id: params.provider_id,
@@ -29,4 +29,4 @@ const account = (db) => ({
   },
 });
 
-module.exports = account;
+module.exports = category;

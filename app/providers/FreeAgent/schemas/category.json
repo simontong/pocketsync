@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "url": { "format": "uri" },
+    "description": { "type":  "string" },
+    "group_description": { "type":  "string" },
+    "nominal_code": { "type": "string" },
+    "allowable_for_tax": { "type": "boolean" },
+    "tax_reporting_name": { "type": "string" },
+    "auto_sales_tax_rate": { "type": "string" }
+  }
+}

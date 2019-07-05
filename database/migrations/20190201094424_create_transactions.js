@@ -1,5 +1,7 @@
 exports.up = async function(knex) {
   await knex.schema.createTable('transactions', function(t) {
+    t.charset('utf8mb4');
+    t.collate('utf8mb4_unicode_ci');
     t.increments();
     t.integer('account_id').notNullable().unsigned().references('id').inTable('accounts');
     t.string('provider_ref').notNullable().comment('ID from provider to identify this transaction');

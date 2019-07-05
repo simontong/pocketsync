@@ -44,7 +44,7 @@ const api = (ctx) => {
      * Get app auth URL
      * @return {Promise<string>}
      */
-    async getAppAuthUrl() {
+    async getAppAuthUrl () {
       const { identifier, redirectUri } = await config();
 
       // make sure we have correct config
@@ -65,7 +65,7 @@ const api = (ctx) => {
      * @param code
      * @return {Promise<*>}
      */
-    async fetchAccessToken(code) {
+    async fetchAccessToken (code) {
       const { identifier, secret, redirectUri } = await config();
 
       // make sure we have correct config
@@ -97,7 +97,7 @@ const api = (ctx) => {
      * Refresh access token
      * @return {Promise<*>}
      */
-    async refreshAccessToken() {
+    async refreshAccessToken () {
       const { identifier, secret, refreshToken } = await config();
 
       // make sure we have correct config
@@ -126,8 +126,16 @@ const api = (ctx) => {
      * @param userId
      * @return {Promise<*>}
      */
-    fetchUser(userId = 'me') {
+    fetchUser (userId = 'me') {
       return call(`users/${userId}`);
+    },
+
+    /**
+     * Fetch payment categories
+     * @returns {Promise<*>}
+     */
+    fetchCategories() {
+      return call('categories');
     },
 
     /**
@@ -135,7 +143,7 @@ const api = (ctx) => {
      * @return {Promise<*>}
      * @public
      */
-    fetchAccounts(view = 'all') {
+    fetchAccounts (view = 'all') {
       const qs = { view };
       return call('bank_accounts', { qs });
     },
@@ -151,7 +159,7 @@ const api = (ctx) => {
      * @param perPage
      * @return {Promise<*>}
      */
-    fetchTransactions({ bankAccount, perPage = 100, page = 1, fromDate, toDate, updatedSince, lastUploaded }) {
+    fetchTransactions ({ bankAccount, perPage = 100, page = 1, fromDate, toDate, updatedSince, lastUploaded }) {
       // check args
       if (!bankAccount) throw invalidParamError('FreeAgent missing `bankAccount` argument');
 
@@ -174,7 +182,7 @@ const api = (ctx) => {
      * @param statement
      * @return {Promise<*>}
      */
-    createTransactions(bankAccount, statement) {
+    createTransactions (bankAccount, statement) {
       // check args
       if (!bankAccount) throw invalidParamError('FreeAgent missing `bankAccount` argument');
       if (!statement) throw invalidParamError('FreeAgent missing `statement` argument');
@@ -187,6 +195,27 @@ const api = (ctx) => {
 
       return call('bank_transactions/statement', opts);
     },
+
+    /**
+     * Create transaction explanation
+     * @param explanation see https://dev.freeagent.com/docs/bank_transaction_explanations#attributes
+     * @returns {Promise<*>}
+     */
+    createTransactionExplanation (explanation) {
+      // check args
+      if (!explanation || 'object' !== typeof explanation) throw invalidParamError('FreeAgent missing or invalid `explanation` argument');
+      if (!explanation.bank_account && !explanation.bank_transaction) throw invalidParamError('FreeAgent missing `explanation.bank_account` or `explanation.bank_transaction` argument');
+      if (!explanation.dated_on) throw invalidParamError('FreeAgent missing `explanation.dated_on` argument');
+      if (!explanation.gross_value) throw invalidParamError('FreeAgent missing `explanation.gross_value` argument');
+      // if (!explanation.description) throw invalidParamError('FreeAgent missing `explanation.description` argument');
+
+      const opts = {
+        method: 'post',
+        form: { bank_transaction_explanation: explanation },
+      };
+
+      return call(`bank_transaction_explanations`, opts);
+    }
   };
 };
 

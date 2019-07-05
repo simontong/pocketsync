@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "properties": {
+    "id": { "type":  "number" },
+    "title": { "type": "string" },
+    "colour": { "type": "string" },
+    "is_transfer": { "type": "boolean" },
+    "is_bill": { "type": "boolean" },
+    "refund_behaviour": { "type": "string" },
+    "children": { "type": "array" },
+    "parent_id": { "type": "number" },
+    "roll_up": { "type": "boolean" },
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" }
+  }
+}

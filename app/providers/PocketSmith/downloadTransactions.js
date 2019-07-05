@@ -44,12 +44,15 @@ const downloadTransactions = (ctx) => async (account, fromDate) => {
     endDate,
   });
 
+  // todo: abstract
+  const categories = await ctx.model('category').find('provider_id', account.provider_id);
+
   return processTransactions(
     ctx,
     schema,
     fetchTransactionsFn,
     getTransactionProviderRef,
-    normalizeTransaction(account),
+    normalizeTransaction(account, categories),
   );
 };
 
@@ -74,11 +77,55 @@ const fetchTransactions = (ctx, apiParams) => {
       throw new Error(e);
     }
 
+    // add attachments to transactions
+    data = fetchAttachments(req, data);
+
     // next page
     apiParams.page = (apiParams.page || 1) + 1;
 
     return data;
   };
+};
+
+/**
+ * Fetch transaction attachments
+ * @param req
+ * @param data transaction data
+ * @returns {Promise<Array>}
+ */
+const fetchAttachments = async (req, data) => {
+  // how many requests to make in parallel
+  const parallel = 5;
+
+  /**
+   * fetch attachments in parallel
+   * @param transactions
+   * @returns {Promise<any[]>}
+   */
+  const fetchFn = (transactions) => Promise.all(
+    transactions.map(transaction => new Promise((resolve, reject) => {
+      req.fetchTransactionAttachments(transaction.id)
+        .then(attachments => resolve({
+          ...transaction,
+          $attachments: attachments,
+        }))
+        .catch(reject);
+    })),
+  );
+
+  // fetch transactions in parallel (based on `parallel`)
+  const transactionsWithAttachments = [];
+  for (let i = 0; i < data.length; i += parallel) {
+    // take slice of transactions to pass to `fetchFn`
+    const transactions = data.slice(i, i + parallel);
+
+    // fetch in parallel and add to transactions array
+    transactionsWithAttachments.push(
+      ...await fetchFn(transactions),
+    );
+  }
+
+  return transactionsWithAttachments;
 };
 
 /**
@@ -93,10 +140,15 @@ const getTransactionProviderRef = (transaction) => {
 /**
  * Normalize transaction
  * @param account
+ * @param categories
  * @return {*}
  */
-const normalizeTransaction = (account) => (row) => {
+const normalizeTransaction = (account, categories) => (row) => {
   const data = row.data;
+
+  // get category
+  const categoryId = Number(_.get(data, 'category.id', 0));
+  const category = categoryId && categories.find(c => Number(c.provider_ref) === categoryId);
 
   // normalize
   const payee = data.original_payee;
@@ -106,14 +158,24 @@ const normalizeTransaction = (account) => (row) => {
   const date = moment(data.date).format('YYYY-MM-DD');
   const isTransfer = data.is_transfer ? 1 : 0;
 
+  // deal with attachments
+  const attachments = data.$attachments.map(attachment => ({
+    description: attachment.title,
+    type: attachment.content_type,
+    filename: attachment.file_name,
+    url: attachment.original_url,
+  }));
+
   return {
     account_id: account.id,
+    category_id: category && category.id,
     provider_ref: row.provider_ref,
     payee,
     amount,
     date,
     is_transfer: isTransfer,
     // memo,
+    attachments: attachments.length > 0 ? JSON.stringify(attachments) : null,
   };
 };
 

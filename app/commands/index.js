@@ -11,6 +11,7 @@ module.exports = (config, argv) => {
   require('./config')(config, program);
   require('./create-sync')(config, program);
   require('./provider')(config, program);
+  require('./download-categories')(config, program);
   require('./sync')(config, program);
   require('./user')(config, program);
 

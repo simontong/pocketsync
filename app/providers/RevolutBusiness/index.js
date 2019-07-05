@@ -6,6 +6,7 @@ const { downloadTransactions } = require('./downloadTransactions');
 
 module.exports = (ctx) => ({
   meta: {
+    code: 'REVBUS',
     isSource: true,
     isTarget: false,
   },

@@ -2,6 +2,7 @@
 
 const _ = require('lodash');
 const Ajv = require('ajv');
+const { Base64 } = require('js-base64');
 
 // ISO 4217 decimals - https://en.wikipedia.org/wiki/ISO_4217#cite_note-ReferenceA-7
 const CURRENCY_SCALE = {
@@ -52,7 +53,7 @@ const resultCounter = () => {
      * Get outcome
      * @return {{total: number, created: number, ids: Array, updated: number}}
      */
-    get() {
+    get () {
       return result;
     },
 
@@ -62,7 +63,7 @@ const resultCounter = () => {
      * @param updated
      * @param id
      */
-    add({ created = 0, updated = 0, id = null }) {
+    add ({ created = 0, updated = 0, id = null }) {
       if (id) {
         result.ids.push(id);
       }
@@ -99,6 +100,33 @@ const processAccounts = async (ctx, schema, fetchFn, getProviderRef, normalizeFn
 
   // store fetched data in db
   return storeNormalized(ctx, rows, 'account', schema, normalizeFn);
+};
+
+/**
+ * Process categories (fetch, store, normalize)
+ * @param ctx
+ * @param schema
+ * @param fetchFn
+ * @param getProviderRef
+ * @param normalizeFn
+ * @return {Promise<Array|*>}
+ */
+const processCategories = async (ctx, schema, fetchFn, getProviderRef, normalizeFn) => {
+  const { log } = ctx;
+
+  // fetch data from API
+  const data = await fetchFn(ctx);
+  log.trace('%d categories fetched', data.length);
+
+  // no data? bail
+  if (!data.length) {
+    return [];
+  }
+
+  // store api data
+  const rows = await storeFetched(ctx, data, 'category', getProviderRef);
+
+  return storeNormalized(ctx, rows, 'category', schema, normalizeFn);
 };
 
 /**
@@ -187,6 +215,7 @@ const storeNormalized = async (ctx, rows, type, schema, normalizeFn) => {
 
   const updateFn = {
     account: (...args) => model('account').updateOrCreateAccount(...args),
+    category: (...args) => model('category').updateOrCreateCategory(...args),
     transaction: (...args) => model('transaction').updateOrCreateTransaction(...args),
   };
 
@@ -207,13 +236,13 @@ const storeNormalized = async (ctx, rows, type, schema, normalizeFn) => {
     }
 
     // get normalized data from provider
-    const transaction = normalizeFn(row);
-    if (!transaction) {
+    const data = normalizeFn(row, rows);
+    if (!data) {
       continue;
     }
 
     // save and count
-    countResult.add(await updateFn[type](transaction));
+    countResult.add(await updateFn[type](data));
   }
   const { created, updated, total, ids } = countResult.get();
   log.debug(
@@ -227,12 +256,29 @@ const storeNormalized = async (ctx, rows, type, schema, normalizeFn) => {
   return model(type).byId(ids);
 };
 
+/**
+ * fetch attachment and return as base64
+ * @param ctx
+ * @param url
+ * @returns {Promise<string>}
+ */
+const fetchAttachment = async ({ request }, url) => {
+  if (!url || !/^https?:/.test(url)) {
+    return null;
+  }
+
+  const data = await request({ url });
+  return Base64.encode(data);
+};
+
 module.exports = {
   resultCounter,
   toLowestCommonUnit,
   fromLowestCommonUnit,
   processAccounts,
+  processCategories,
   processTransactions,
   storeFetched,
   storeNormalized,
+  fetchAttachment,
 };
