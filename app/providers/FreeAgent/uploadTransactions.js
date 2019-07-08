@@ -26,7 +26,8 @@ const memoRegExp = '^@([^:]+):([^:]+):([^@]+)@$';
  * @param ctx
  * @return {Function}
  */
-const uploadTransactions = (ctx) => async ({ sourceProvider, sourceAccount, targetProvider, targetAccount, transactions, onTransactionUploaded }) => {
+const uploadTransactions = (ctx) => async (syncArgs) => {
+  const { sourceProvider, sourceAccount, targetProvider, targetAccount, transactions, onTransactionUploaded } = syncArgs;
   const req = api(ctx);
 
   // prepare statement in OFX format
@@ -37,7 +38,7 @@ const uploadTransactions = (ctx) => async ({ sourceProvider, sourceAccount, targ
     await req.createTransactions(targetAccount.provider_ref, statement);
   } catch (e) {
     await shouldRefreshToken(ctx, e);
-    return uploadTransactions(targetAccount, transactions, onTransactionUploaded);
+    return uploadTransactions(ctx)(targetAccount, transactions, onTransactionUploaded);
   }
 
   // wait for a sec, so we can grab the uploadedTransactions
