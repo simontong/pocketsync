@@ -38,7 +38,7 @@ const uploadTransactions = (ctx) => async (syncArgs) => {
     await req.createTransactions(targetAccount.provider_ref, statement);
   } catch (e) {
     await shouldRefreshToken(ctx, e);
-    return uploadTransactions(ctx)(targetAccount, transactions, onTransactionUploaded);
+    return uploadTransactions(ctx)(syncArgs);
   }
 
   // wait for a sec, so we can grab the uploadedTransactions
